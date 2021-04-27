@@ -1,7 +1,7 @@
 console.log("app.js loaded");
 // Define SVG area dimensions
-var svgWidth = 960;
-var svgHeight = 660;
+var svgWidth = 460;
+var svgHeight = 400;
 
 // Define the chart's margins as an object
 var chartMargin = {
@@ -56,8 +56,32 @@ function init() {
         console.log(`Smokes: ${smokes}`);
         console.log(`SmokesLow: ${smokesLow}`);
         console.log(`SmokesHigh: ${smokesHigh}`);
-        
 
+        var x = d3.scaleLinear()
+                //.domain([0, d3.max(ages, d => d.x)])
+                .domain([0, 100])
+                .range([chartHeight, 0]);
+        svg.append("g")
+            .call(d3.axisBottom(x));
+
+        var y = d3.scaleLinear()
+                //.domain([0, d3.max(smokes, d => d.y)])
+                .domain([0,100])
+                .range([0,chartWidth]) ///TBD
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        svg.append("g")
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+                .attr("cx", data.age )
+                .attr("cy", data.smokes)
+                .attr("r", 1.5)
+                .style("fill", "#69b3a2");
+
+        
     });
 }
 
