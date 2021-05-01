@@ -29,6 +29,7 @@ var chartGroup = svg.append("g")
 
 // Initial Params
 var chosenXAxis = "poverty";
+var chosenYAxis = "obesity";
 
 // function used for updating x-scale var upon click on axis label
 function xScale(data, chosenXAxis) {
@@ -95,13 +96,22 @@ function updateToolTip(chosenXAxis, circlesGroup) {
         label = "Household Income (Median)";
     }
 
-    
+    if (chosenYAxis === "obesity") {
+        ylabel = "Obese (%)";
+    }
+    else if (chosenYAxis === "smokes") {
+        ylabel = "Smokes (%)";
+    } else {
+        ylabel = "Lacks Healthcare (%)";
+    }
+
+
 
     var toolTip = d3.tip()
         .attr("class", "tooltip")
-        .offset([80, -60])
+        .offset([10, 10])
         .html(function(d) {
-            return (`${d.state_abbr} <br> ${label} ${d[chosenXAxis]}`);
+            return (`${d.state_abbr} <br> ${label} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
         });
 
         circlesGroup.call(toolTip);
@@ -179,9 +189,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
     var xLinearScale = xScale(data, chosenXAxis);
 
     // Create y scale funtion
-    var yLinearScale = d3.scaleLinear() 
-        .domain([0, d3.max(data, d => d.obesityHigh)])
-        .range([chartHeight, 0]);
+    var yLinearScale = yScale(data, chosenYAxis);
     
     // Create initial axis functions
     var bottomAxis = d3.axisBottom(xLinearScale);
@@ -195,6 +203,8 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
 
     // append y axis
     chartGroup.append("g")
+        .classed("y-axis", true)
+        .attr("transform", `translate(${chartWidth}, 0)`)
         .call(leftAxis);
 
     var circlesGroup = chartGroup.selectAll("circle")
@@ -202,7 +212,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .enter()
         .append("circle")
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
-        .attr("cy", d => yLinearScale(d.smokes))
+        .attr("cy", d => yLinearScale(d[chosenYAxis]))
         .attr("r", 5)
         .attr("fill", "purple")
         .attr("opacity", "0.5")
