@@ -28,10 +28,9 @@ var chartGroup = svg.append("g")
             .attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
 
 // Initial Params
-var chosenXAxis = "smokes";
+var chosenXAxis = "poverty";
 
 // function used for updating x-scale var upon click on axis label
-
 function xScale(data, chosenXAxis) {
     //create scales
     var xLinearScale = d3.scaleLinear()
@@ -42,16 +41,36 @@ function xScale(data, chosenXAxis) {
     return xLinearScale;
 }
 
+// function used for updating y-scale var upon click on axis label
+function yScale(data, chosenYAxis) {
+    var yLinearScale = d3.scaleLinear()
+        .domain([d3.min(data, d => d[chosenYAxis]),
+            d3.max(data, d => d[chosenYAxis])
+    ])
+    .range([chartHeight, 0]);
+    return yLinearScale;
+}
+
 // function used for update xAxis var upon click on axis label
-function renderAxes(newXScale, xAxis) {
+function renderXAxis(newXScale, xAxis) {
     var bottomAxis = d3.axisBottom(newXScale);
 
     xAxis.transition()
-        .duration(1000)
+        .duration(2000)
         .call(bottomAxis);
     
     return xAxis;
 }
+
+function renderYAxis(newYScale, yAxis) {
+    var leftAxis = d3.axisLeft(newYScale);
+
+    yAxis.transition()
+        .duration(2000)
+        .call(leftAxis);
+    return yAxis;
+}
+
 
 // function used for updating circles group with a transition 
 // to new circles
@@ -67,17 +86,22 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 function updateToolTip(chosenXAxis, circlesGroup) {
     var label;
 
-    if (chosenXAxis === "smokes") {
-        label = "Smokes";
+    if (chosenXAxis === "poverty") {
+        label = "In Poverty (%)";
+    } 
+    else if (chosenXAxis === "age") {
+        label = "Age (Median)";
     } else {
-        label = "Obesity";
+        label = "Household Income (Median)";
     }
+
+    
 
     var toolTip = d3.tip()
         .attr("class", "tooltip")
         .offset([80, -60])
         .html(function(d) {
-            return (`${d.state_abbreviations} <br> ${label} ${d[chosenXAxis]}`);
+            return (`${d.state_abbr} <br> ${label} ${d[chosenXAxis]}`);
         });
 
         circlesGroup.call(toolTip);
@@ -101,19 +125,23 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
     // healthcare,healthcareLow,healthcareHigh,obesity,obesityLow,obesityHigh,
     //smokes,smokesLow,smokesHigh
     var states = data.map(data => data.state);
-    var state_abbreviations = data.map(data => data.abbr);
-    console.log(`States: ${states}`);
-    console.log(`State abbrev: ${state_abbreviations}`);
+    var state_abbr = data.map(data => data.abbr);
+    // console.log(`States: ${states}`);
+    // console.log(`State abbrev: ${state_abbr}`);
     
     data.forEach(function(data) {
         data.poverty = +data.poverty;
+        data.povertyMoe = +data.povertyMoe;
 
         data.age = +data.age;
+        data.ageMoe = +data.ageMoe;
         
         data.income = +data.income;
         data.incomeMoe = +data.incomeMoe;
 
         data.healthcare = +data.healthcare;
+        data.healthcareLow = +data.healthcareLow;
+        data.healthcareHigh = +data.healthcareHigh;
 
         data.smokes = +data.smokes;
         data.smokesLow = +data.smokesLow;
@@ -124,23 +152,35 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         data.obesityHigh = +data.obesityHigh;
 
     })
-    var ages = data.map(data => data.age);
-    console.log(`Ages: ${ages}`);
+    
+    var poverty = data.map(data => data.poverty);
+    var povertyMoe = data.map(data => data.povertyMoe);
 
-    //var ageMoe = data.map(data => data.ageMoe);
+    var age = data.map(data => data.age);
+    var ageMoe = data.map(data => data.ageMoe);
+
+    var income = data.map(data => data.income);
+    var incomeMoe = data.map(data => data.incomeMoe);
+
+    var healthcare = data.map(data => data.healthcare);
+    var healthcareHigh = data.map(data => data.healthcareHigh);
+    var healthcareLow = data.map(data => data.healthcareLow);
+
+    
     var smokes = data.map(data => data.smokes);
     var smokesLow = data.map(data => data.smokesLow);
     var smokesHigh = data.map(data => data.smokesHigh);
-        
-    console.log(`Smokes: ${smokes}`);
-    console.log(`SmokesLow: ${smokesLow}`);
-    console.log(`SmokesHigh: ${smokesHigh}`);
 
+    var obesity = data.map(data => data.obesity);
+    var obesityHigh = data.map(data => data.obesityHigh);
+    var obesityLow = data.map(data => data.obesityLow);
+        
+    
     var xLinearScale = xScale(data, chosenXAxis);
 
     // Create y scale funtion
     var yLinearScale = d3.scaleLinear() 
-        .domain([0, d3.max(data, d => d.smokes)])
+        .domain([0, d3.max(data, d => d.obesityHigh)])
         .range([chartHeight, 0]);
     
     // Create initial axis functions
@@ -207,7 +247,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
                 xLinearScale = xScale(data, chosenXAxis);
 
                 // updates x axis with transition
-                xAxis = renderAxes(xLinearScale, xAxis);
+                xAxis = renderXAxis(xLinearScale, xAxis);
 
                 // updates circles with new x values TBD
                 circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
