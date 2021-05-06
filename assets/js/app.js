@@ -109,7 +109,7 @@ function renderCircles(circlesGroup, xScale, xAxis, yScale, yAxis) {
 
 
 // function used for updating circles group with new tooltip
-function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
+function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, state_abbr) {
     var xlabel;
     var ylabel;
 
@@ -136,8 +136,8 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
         //.offset([80, -60])
         .html(function(d) {
             //TBD resolve the state abbr
-            //return (`${d.state_abbr} <br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
-            return (`<br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
+            return (`${d[state_abbr]} <br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
+            //return (`<br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
         });
 
         circlesGroup.call(toolTip);
@@ -238,8 +238,8 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .classed("y-axis", true)
         .attr("transform", `translate(${chartWidth}, 0)`)
         .call(leftAxis);
-    chartGroup.append("g")
-        .call(leftAxis);
+    // chartGroup.append("g")
+    //     .call(leftAxis);
    
     
     var circlesGroup = chartGroup.selectAll("circle")
@@ -259,7 +259,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
     var labelsGroup = chartGroup.append("g");
     labelsGroup.attr("transform", `transform(${chartWidth / 2}, ${chartHeight + 20})`);
         
-
+    console.log(`State abbrev: ${state_abbr}`);
     // y axis labels 
     var obesityLabel = labelsGroup.append("text")
         .attr("y", -30)
@@ -307,7 +307,8 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .classed("inactive", true)
         .text("Household Income (Median)");
     
-
+    console.log(`State abbrev: ${state_abbr}`);
+    
     chartGroup.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 0 - chartMargin.left)
@@ -317,10 +318,12 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .text("Data Journalism and D3");
 
     // updateToolTip function
-    circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
-
+    circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, state_abbr);
+    console.log(`State abbrev: ${state_abbr}`);  // states print out here!!
     labelsGroup.selectAll("text")
         .on("click", function() {
+            console.log(`State abbrev: ${state_abbr}`);  // states do NOT print out here!!
+
             var xValue = d3.select(this).attr("xValue");
             console.log(`xValue selected: ${xValue}`);
             if (xValue !== chosenXAxis && xValue != null) {
@@ -411,7 +414,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
             circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
             // updates tooltips with new info TBD
-            circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, state_abbr);
 
         });
 }).catch(function(error) {
@@ -419,28 +422,4 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
 });
 
 
-    // var x = d3.scaleLinear()
-    //         .domain([0, d3.max(ages, d => d.age)])
-    //         //.domain([0, 100])
-    //         .range([0, chartHeight]);
-    // svg.append("g")
-    //     .call(d3.axisBottom(x));
-
-    // var y = d3.scaleLinear()
-    //         .domain([0, d3.max(smokes, d => d.smokes)])
-    //         //.domain([0,100])
-    //         .range([chartWidth, 0]) ///TBD
-    // svg.append("g")
-    //     .call(d3.axisLeft(y));
-
-    // svg.append("g")
-    //     .selectAll("dot")
-    //     .data(data)
-    //     .enter()
-    //     .append("circle")
-    //         .attr("cx", data.age )
-    //         .attr("cy", data.smokes)
-    //         .attr("r", 1.5)
-    //         .style("fill", "#69b3a2");
-
-
+    
