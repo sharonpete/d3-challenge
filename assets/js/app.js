@@ -78,25 +78,35 @@ function renderYAxis(newYScale, yAxis) {
 
 // function used for updating circles group with a transition 
 // to new circles when a new x axis is selected
-function renderXCircles(circlesGroup, newXScale, chosenXAxis) {
-    circlesGroup.transition()
-        .duration(5000)
-        .attr("cx", d => newXScale(d[chosenXAxis]));
+// function renderXCircles(circlesGroup, newXScale, chosenXAxis) {
+//     circlesGroup.transition()
+//         .duration(5000)
+//         .attr("cx", d => newXScale(d[chosenXAxis]));
     
-    return circlesGroup;
+//     return circlesGroup;
 
-}
+// }
 
 // function used for updating circles group with a transition
 // to new circles when a new y axis is selected
-function renderYCircles(circlesGroup, newYScale, chosenYAxis) {
+// function renderYCircles(circlesGroup, newYScale, chosenYAxis) {
+//     circlesGroup.transition()
+//         .duration(5000)
+//         .attr("cy", d => newYScale(d[chosenYAxis]));
+    
+//     return circlesGroup;
+
+// }
+
+function renderCircles(circlesGroup, xScale, xAxis, yScale, yAxis) {
     circlesGroup.transition()
         .duration(5000)
-        .attr("cy", d => newYScale(d[chosenYAxis]));
+        .attr("cx", d => xScale(d[xAxis]))
+        .attr("cy", d => yScale(d[yAxis]));
     
     return circlesGroup;
-
 }
+
 
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
@@ -224,10 +234,10 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .call(bottomAxis);
 
     // append y axis
-    // chartGroup.append("g")
-    //     .classed("y-axis", true)
-    //     .attr("transform", `translate(${chartWidth}, 0)`)
-    //     .call(leftAxis);
+    var yAxis = chartGroup.append("g")
+        .classed("y-axis", true)
+        .attr("transform", `translate(${chartWidth}, 0)`)
+        .call(leftAxis);
     chartGroup.append("g")
         .call(leftAxis);
    
@@ -313,7 +323,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
         .on("click", function() {
             var xValue = d3.select(this).attr("xValue");
             console.log(`xValue selected: ${xValue}`);
-            if (xValue !== chosenXAxis) {
+            if (xValue !== chosenXAxis && xValue != null) {
                 chosenXAxis = xValue;
 
                 //updates x scale for new data
@@ -323,11 +333,11 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
                 xAxis = renderXAxis(xLinearScale, xAxis);
                 //xAxis = renderXAxes(xLinearScale, xAxis);
 
-                // updates circles with new x values TBD
-                circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis);
+                // // updates circles with new x values TBD
+                // circlesGroup = renderXCircles(circlesGroup, xLinearScale, chosenXAxis);
 
-                // updates tooltips with new info TBD
-                circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+                // // updates tooltips with new info TBD
+                // circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
                 // changes classes to change bold text  TBD
                 if (chosenXAxis === "poverty") {
@@ -356,7 +366,7 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
             }
             var yValue = d3.select(this).attr("yValue");
             console.log(`yValue selected: ${yValue}`);
-            if ( yValue !== chosenYAxis ) {
+            if ( yValue !== chosenYAxis && yValue != null) {
                 chosenYAxis = yValue;
 
                 // updates y scale for new data
@@ -365,11 +375,11 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
                 // update y axis with transition
                 yAxis = renderYAxis(yLinearScale, yAxis);
 
-                // update circles with y values 
-                circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis);
+                // // update circles with y values 
+                // circlesGroup = renderYCircles(circlesGroup, yLinearScale, chosenYAxis);
                 
-                // update tooltips with new info
-                circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
+                // // update tooltips with new info
+                // circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
 
                 // changes ... to change bold text 
                 if (chosenYAxis === "obesity") {
@@ -396,6 +406,13 @@ d3.csv("../../assets/data/data.csv").then(function(data, err){
                 }
 
             }
+
+            // updates circles with new x values TBD
+            circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+
+            // updates tooltips with new info TBD
+            circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+
         });
 }).catch(function(error) {
     console.log(error);
