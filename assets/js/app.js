@@ -130,25 +130,28 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     } else {
         ylabel = "Lacks Healthcare (%)";
     }
-    // //console.log(data.state_abbr);
+    console.log(circlesGroup);
+    
   
     console.log('in updateToolTip')
  
 
     var toolTip = d3.tip()
-        .attr("class", "tooltip")
+        .attr("class", "d3-tip")
         .offset([-8, 0])
         .html(function(d) {
-            //TBD resolve the state abbr
-            // return (`${d[state_abbr]} <br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
-            return (`<br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
-        });
-
+            return (`${d.state} <br>${xlabel} ${d[chosenXAxis]} <br> ${ylabel} ${d[chosenYAxis]}`);
+        })
+        .direction('n');
+       
     circlesGroup.call(toolTip);
 
+    circlesGroup.append('rect')
+        .attr('width', 100)
+        .attr('height', 100);
+
     circlesGroup.on("mouseover", function(data) {
-        //console.log(data);
-        toolTip.show(data);
+        toolTip.show(data, this);
     })
     .on("mouseout", function(data, index) {
         toolTip.hide(data);
@@ -198,9 +201,6 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
     });
     console.log(peopleData);
     var poverty = peopleData.map(data => data.poverty);
-
-    console.log("Poverty");
-    console.log(poverty);
     
     var age = peopleData.map(data => data.age);
    
@@ -215,13 +215,9 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
         
     console.log(`what is data here? ${peopleData}`);
 
-    //var xLinearScale = xScale(poverty, chosenXAxis);
     var xLinearScale = xScale(peopleData, chosenXAxis);
 
-    
     // Create y scale function
-    //var yLinearScale = yScale(obesity, chosenYAxis);
-    // var yLinearScale = yScale(data, chosenYAxis)
     var yLinearScale = d3.scaleLinear()
         .domain([0, d3.max(peopleData, d => d.obesity)])
         .range([chartHeight,0]);
@@ -251,12 +247,16 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
         .append("circle")
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
         .attr("cy", d => yLinearScale(d[chosenYAxis]))
+        .attr('value', d => d.abbr)
         .attr("r", 10)
         .attr("fill", "purple")
         .attr("opacity", "0.5")
-        .text(function (d,i) {
-            return d;                                          
-        });
+        // .append("text")
+        // .attr("class", "labelText")
+        // .text(d => d.abbr);
+        // .text(function (d,i) {
+        //     return d;                                          
+        // });
 
     // Create group for multiple axis labels
     var labelsGroup = chartGroup.append("g")
@@ -286,7 +286,7 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
         .attr("transform", "rotate(-90)")
         .attr("yValue", "healthcare")  // value to grab for event listener
         .classed("inactive", true)
-        .text("Lacks Healthcare (%0)");
+        .text("Lacks Healthcare (%)");
 
     // x axis labels
     var povertyLabel = labelsGroup.append("text")
@@ -294,7 +294,7 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
         .attr("x", 200)
         .attr("xValue", "poverty")  // value to grab for event listener
         .classed("active", true)
-        .text("In poverty (%0)");
+        .text("In poverty (%)");
 
     var ageLabel = labelsGroup.append("text")
         .attr("y", 315)
@@ -416,7 +416,7 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
             circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
             // updates tooltips with new info TBD
-            // circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
         });
 }).catch(function(error) {
