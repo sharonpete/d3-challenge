@@ -76,37 +76,27 @@ function renderYAxis(newYScale, yAxis) {
 }
 
 
-// function used for updating circles group with a transition 
-// to new circles when a new x axis is selected
-// function renderXCircles(circlesGroup, newXScale, chosenXAxis) {
-//     circlesGroup.transition()
-//         .duration(5000)
-//         .attr("cx", d => newXScale(d[chosenXAxis]));
-    
-//     return circlesGroup;
-
-// }
-
-// function used for updating circles group with a transition
-// to new circles when a new y axis is selected
-// function renderYCircles(circlesGroup, newYScale, chosenYAxis) {
-//     circlesGroup.transition()
-//         .duration(5000)
-//         .attr("cy", d => newYScale(d[chosenYAxis]));
-    
-//     return circlesGroup;
-
-// }
-
 function renderCircles(circlesGroup, xScale, xAxis, yScale, yAxis) {
     circlesGroup.transition()
         .duration(5000)
         .attr("cx", d => xScale(d[xAxis]))
         .attr("cy", d => yScale(d[yAxis]));
     
+           
     return circlesGroup;
 }
 
+function updateTextGroup(textGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis) {
+    console.log("in updateTextGroup");
+    
+    textGroup.transition()
+        .duration(4000)
+        .attr('x', d => xLinearScale(d[chosenXAxis]))
+        .attr('y', d => yLinearScale(d[chosenYAxis])+5 );
+        
+
+    return textGroup;
+}
 
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
@@ -157,6 +147,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
         toolTip.hide(data);
     });
 
+    
     return circlesGroup;
 }
 
@@ -213,7 +204,8 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
     var obesity = peopleData.map(data => data.obesity);
    
         
-    console.log(`what is data here? ${peopleData}`);
+    console.log(`what is data here?`);
+    console.log(peopleData);
 
     var xLinearScale = xScale(peopleData, chosenXAxis);
 
@@ -224,7 +216,8 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
     
     // Create initial axis functions
     var bottomAxis = d3.axisBottom(xLinearScale);
-    var leftAxis = d3.axisLeft(yLinearScale);
+    var leftAxis = d3.axisLeft()
+            .scale(yLinearScale);
 
     // append x axis
     var xAxis = chartGroup.append("g")
@@ -235,10 +228,9 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
     // append y axis
     var yAxis = chartGroup.append("g")
         .classed("y-axis", true)
-        .attr("transform", `translate(${chartWidth}, 0)`)
+        .attr("transform", `translate(0, 0)`)
         .call(leftAxis);
-    // chartGroup.append("g")
-    //     .call(leftAxis);
+
    
     
     var circlesGroup = chartGroup.selectAll("circle")
@@ -248,41 +240,49 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
         .attr("cx", d => xLinearScale(d[chosenXAxis]))
         .attr("cy", d => yLinearScale(d[chosenYAxis]))
         .attr('value', d => d.abbr)
-        .attr("r", 10)
+        .attr("r", 15)
         .attr("fill", "purple")
         .attr("opacity", "0.5")
-        // .append("text")
-        // .attr("class", "labelText")
-        // .text(d => d.abbr);
-        // .text(function (d,i) {
-        //     return d;                                          
-        // });
 
+    var textGroup = chartGroup.selectAll(".text")
+        .data(peopleData)
+        .enter()
+        .append("text")
+        .attr("class", "labelText")
+        .attr('x', d => xLinearScale(d[chosenXAxis]))
+        .attr('y', d => yLinearScale(d[chosenYAxis])+5 )
+        .attr('text-anchor', 'middle')
+        .attr('stroke-width', '2px')
+        .text(d => d.abbr);
+       
     // Create group for multiple axis labels
     var labelsGroup = chartGroup.append("g")
-                        .attr("transform", `transform(${chartWidth / 2}, ${chartHeight + 20})`);
+                        .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + 20})`);
         
     
     // y axis labels 
     var obesityLabel = labelsGroup.append("text")
-        .attr("y", -30)
-        .attr("x", -200)
+        .attr("y", -chartWidth/2 - 60)
+        .attr("x", chartHeight/2)
+        .attr('text-anchor', 'middle')
         .attr("transform", "rotate(-90)")
         .attr("yValue", "obesity")  // value to grab for event listener
         .classed("active", true)
         .text("Obese (%)");
 
     var smokesLabel = labelsGroup.append("text")
-        .attr("y", -45)                     //(chartHeight + 20))
-        .attr("x", -200)
+        .attr("y", -chartWidth/2 - 45)                     //(chartHeight + 20))
+        .attr("x", chartHeight/2)
+        .attr('text-anchor', 'middle')
         .attr("transform", "rotate(-90)")
         .attr("yValue", "smokes")  // value to grab for event listener
         .classed("inactive", true)
         .text("Smokes (%)");
 
     var healthcareLabel = labelsGroup.append("text")
-        .attr("y", - 60)
-        .attr("x", -200)
+        .attr("y", -chartWidth/2- 30)
+        .attr("x", chartHeight/2)
+        .attr('text-anchor', 'middle')
         .attr("transform", "rotate(-90)")
         .attr("yValue", "healthcare")  // value to grab for event listener
         .classed("inactive", true)
@@ -290,22 +290,22 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
 
     // x axis labels
     var povertyLabel = labelsGroup.append("text")
-        .attr("y", 300)
-        .attr("x", 200)
+        .attr("y", -chartHeight/2 +150)
+        .attr("x", chartWidth/2 - 250)
         .attr("xValue", "poverty")  // value to grab for event listener
         .classed("active", true)
         .text("In poverty (%)");
 
     var ageLabel = labelsGroup.append("text")
-        .attr("y", 315)
-        .attr("x", 200)
+        .attr("y", -chartHeight/2 +165)
+        .attr("x", chartWidth/2 - 250)
         .attr("xValue", "age")  // value to grab for event listener
         .classed("inactive", true)
         .text("Age (Median)");
 
     var incomeLabel = labelsGroup.append("text")
-        .attr("y", 330)
-        .attr("x", 200)
+        .attr("y", -chartHeight/2 +180)
+        .attr("x", chartWidth/2 - 250)
         .attr("xValue", "income")  // value to grab for event listener
         .classed("inactive", true)
         .text("Household Income (Median)");
@@ -412,10 +412,13 @@ d3.csv("../assets/data/data.csv").then(function(peopleData, err) {
 
             }
 
-            // updates circles with new x values TBD
+            // updates circles with new x values 
             circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
-            // updates tooltips with new info TBD
+            // // updates the text on the circles
+            textGroup = updateTextGroup(textGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
+            
+            // updates tooltips with new info 
             circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
         });
