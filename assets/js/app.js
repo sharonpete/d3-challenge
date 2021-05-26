@@ -1,4 +1,6 @@
 console.log("app.js loaded");
+var whereAmI = window.location.origin;
+
 // Define SVG area dimensions
 var svgWidth = 600;
 var svgHeight = 400;
@@ -155,7 +157,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
 
 // Retrieve data from the CSV file and execute everything below
-d3.csv("./d3-challenge/assets/data/data.csv").then(function(peopleData, err) {
+d3.csv(whereAmI + "/assets/data/data.csv").then(function(peopleData, err) {
     if (err) throw err;
 
     //console.log(data);
