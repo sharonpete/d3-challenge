@@ -1,5 +1,5 @@
 console.log("app.js loaded");
-var whereAmI = window.location.origin;
+var whereAmI = window.location.href.endsWith(".html") ? window.location.origin : window.location.href;
 
 // Define SVG area dimensions
 var svgWidth = 600;
@@ -156,10 +156,10 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
 console.log(whereAmI);
 
-var wat = () => { if (window.location.href.endsWith(".html")) { return window.location.origin;} return window.location.href; };
+//var wat = () => { if (window.location.href.endsWith(".html")) { return window.location.origin;} return window.location.href; };
 
 // Retrieve data from the CSV file and execute everything below
-d3.csv(wat() + "/assets/data/data.csv").then(function(peopleData, err) {
+d3.csv(whereAmI + "/assets/data/data.csv").then(function(peopleData, err) {
     if (err) throw err;
 
     //console.log(data);
